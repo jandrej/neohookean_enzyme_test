@@ -817,7 +817,7 @@ HOST_DEVICE auto get_value(const tensor<dual<T>, n...>& arg) {
  * @brief Retrieves the gradient component of a double (which is nothing)
  * @return The sentinel, @see zero
  */
-HOST_DEVICE auto get_gradient(double /* arg */) { return zero{}; }
+HOST_DEVICE constexpr auto get_gradient(double /* arg */) { return zero{}; }
 
 /**
  * @brief Retrieves a gradient tensor from a tensor of dual numbers

@@ -3,6 +3,7 @@
 #include <iostream> 
 #include <benchmark/benchmark.h>
 
+#include "cuda_kernels.hpp"
 #include "dual.hpp"
 #include "tensor.hpp"
 
@@ -21,6 +22,11 @@ std::string get_material_name(J2Material) {
 std::string get_material_name(NeoHookeanMaterial) {
   return "neohookean hyperelastic material";
 }
+
+#if !defined(__CUDACC__)
+#define __host__
+#define __device__
+#endif
 
 int enzyme_dup;
 int enzyme_dupnoneed;
@@ -215,7 +221,7 @@ void check_derivatives(J2Material material) {
 
 }
 
-void stress_calculation(const tensor<double, 3, 3> & du_dx, double C1, double D1, tensor< double, 3, 3 >& sigma) {
+__device__ void stress_calculation(const tensor<double, 3, 3> & du_dx, double C1, double D1, tensor< double, 3, 3 >& sigma) {
   static constexpr auto I = Identity<3>();
   double J = det(I + du_dx);
   double p = -2.0 * D1 * J * (J - 1);
@@ -290,6 +296,21 @@ static void gradient_calculation_enzyme(benchmark::State& state) {
 
 }
 BENCHMARK(gradient_calculation_enzyme);
+
+
+static void cuda_mock_fem_loop(benchmark::State& state) {
+
+  for (auto _ : state) {
+    // __enzyme_fwddiff<void>(stress_calculation,
+    //                        enzyme_dup, &du_dx, &perturbation,
+    //                        enzyme_const, C1,
+    //                        enzyme_const, D1,
+    //                        enzyme_dupnoneed, &sigma, &dsigma);
+
+    cuda_kernels::mock_fem_loop();
+  }
+}
+BENCHMARK(cuda_mock_fem_loop);
 
 static void gradient_calculation_symbolic(benchmark::State& state) {
 
