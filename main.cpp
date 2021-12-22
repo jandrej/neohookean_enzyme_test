@@ -221,7 +221,7 @@ void check_derivatives(J2Material material) {
 
 }
 
-__device__ void stress_calculation(const tensor<double, 3, 3> & du_dx, double C1, double D1, tensor< double, 3, 3 >& sigma) {
+void stress_calculation(const tensor<double, 3, 3> & du_dx, double C1, double D1, tensor< double, 3, 3 >& sigma) {
   static constexpr auto I = Identity<3>();
   double J = det(I + du_dx);
   double p = -2.0 * D1 * J * (J - 1);

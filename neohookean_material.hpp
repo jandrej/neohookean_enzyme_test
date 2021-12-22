@@ -10,7 +10,7 @@ struct NeoHookeanMaterial {
 
   static constexpr auto I = Identity<3>();
 
-  __device__ tensor<double, 3, 3> stress(tensor<double, 3, 3> du_dx) const {
+  tensor<double, 3, 3> stress(tensor<double, 3, 3> du_dx) const {
     double J = det(I + du_dx);
     double p = -2.0 * D1 * J * (J - 1);
     auto devB = dev(du_dx + transpose(du_dx) + dot(du_dx, transpose(du_dx)));

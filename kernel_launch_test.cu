@@ -8,6 +8,15 @@ __device__ int enzyme_dupnoneed;
 __device__ int enzyme_out;
 __device__ int enzyme_const;
 
+
+__device__ void stress_calculation(const tensor<double, 3, 3> & du_dx, double C1, double D1, tensor< double, 3, 3 >& sigma) {
+  static constexpr auto I = Identity<3>();
+  double J = det(I + du_dx);
+  double p = -2.0 * D1 * J * (J - 1);
+  auto devB = dev(du_dx + transpose(du_dx) + dot(du_dx, transpose(du_dx)));
+  sigma = -(p / J) * I + 2 * (C1 / pow(J, 5.0 / 3.0)) * devB;
+}
+
 namespace cuda_kernels {
 
 template <int dim, int num_el, int num_qp> 
@@ -42,7 +51,7 @@ void mock_fem_loop() {
   tensor<double, 3, 3> sigma{};
   tensor<double, 3, 3> dsigma{};
 
-  mock_fem_loop_kernel<3, 1024, 9><<<1,1>>>(du_dx, perturbation, C1, D1, sigma, dsigma);
+  mock_fem_loop_kernel<3, 1024, 27><<<1,1>>>(du_dx, perturbation, C1, D1, sigma, dsigma);
 }
 
 };
